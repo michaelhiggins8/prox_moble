@@ -751,7 +751,12 @@ function getHeuristicEstimate(name: string, category: string): { shelf_life: num
 
 async function getLLMEstimate(input: EstimateDatesInput): Promise<{ shelf_life: number; restock: number } | null> {
   try {
-    const response = await fetch('https://wpelfofnestzbtziaggk.supabase.co/functions/v1/estimate-dates', {
+    const functionUrl = import.meta.env.VITE_SUPABASE_EXPIRATION_FUNCTION_URL;
+    if (!functionUrl) {
+      throw new Error('VITE_SUPABASE_EXPIRATION_FUNCTION_URL environment variable not set');
+    }
+
+    const response = await fetch(functionUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
