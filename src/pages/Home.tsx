@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Bell, Trash2, Edit2, Check, X } from 'lucide-react';
+import { Plus, Search, Filter, Bell, Settings, Trash2, Edit2, Check, X, Building2, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProxCard, ProxCardHeader, ProxCardTitle, ProxCardContent } from '@/components/ProxCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUi } from '@/contexts/UiContext';
 import { useGuestStore } from '@/stores/guestStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { AddCategory } from '@/components/home/AddCategory';
+import { DeleteCategory } from '@/components/home/DeleteCategory';
+import { DatePicker } from '@/components/ui/date-picker';
+import { QuantityDisplay } from '@/components/QuantityDisplay';
 
 interface Item {
   id: string;
@@ -19,25 +25,20 @@ interface Item {
   estimated_expiration_at?: string;
   estimated_restock_at?: string;
   store_name?: string;
+  quantity?: number;
+  unit?: string;
 }
 
-const CATEGORIES = [
-  'All',
-  'Produce', 
-  'Dairy', 
-  'Meat', 
-  'Pantry', 
-  'Frozen', 
-  'Beverages', 
-  'Household', 
-  'Personal Care', 
-  'Baby', 
-  'Pet'
-];
+
+
+
+
+
 
 export function Home() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { allCategories, categoriesChangeTracker, setCategoriesChangeTracker } = useUi();
   const { items: guestItems, isGuest } = useGuestStore();
   const { toast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
@@ -57,12 +58,12 @@ export function Home() {
 
   const fetchUserItems = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('items')
-        .select('*')
+        .select('id, name, category, purchased_at, estimated_expiration_at, estimated_restock_at, store_name, quantity, unit, created_at, updated_at, user_id, guest_owner_id, estimate_source')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -237,6 +238,17 @@ export function Home() {
     }
   };
 
+  const handleUpdateQuantity = (itemId: string, quantity: number | null, unit: string | null) => {
+    // Update local state immediately
+    setItems(prevItems =>
+      prevItems.map(item =>
+        item.id === itemId
+          ? { ...item, quantity, unit }
+          : item
+      )
+    );
+  };
+
   const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
@@ -257,16 +269,21 @@ export function Home() {
       {/* Header */}
       <div className="bg-card/95 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
+          
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-prox flex items-center justify-center">
-                <span className="text-lg font-bold text-white">P</span>
+              <div className="w-10 h-10 rounded-prox overflow-hidden">
+                <img
+                  src="/Icon-01.jpg"
+                  alt="Prox Logo"
+                  className="w-20 h-20 object-cover object-center transform translate-x-[5%] translate-y-[-25%]"
+                />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground">
+                <h1 className="text-xl font-semibold text-foreground font-primary">
                   {isGuest ? 'Guest Mode' : `Hello, ${user?.user_metadata?.first_name || 'there'}!`}
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-secondary">
                   {items.length} items in your pantry
                 </p>
               </div>
@@ -280,10 +297,37 @@ export function Home() {
               >
                 <Bell className="h-5 w-5" />
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative"
+                  >
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/home/settings')}
+                    className="flex items-center space-x-2 cursor-pointer hover:bg-accent/10 focus:bg-accent/10"
+                  >
+                    <Settings className="h-4 w-4 text-accent" />
+                    <span className="font-secondary text-sm">Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => navigate('/home/households')}
+                    className="flex items-center space-x-2 cursor-pointer hover:bg-accent/10 focus:bg-accent/10"
+                  >
+                    <Building2 className="h-4 w-4 text-accent" />
+                    <span className="font-secondary text-sm">Households</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="text-sm"
+                className="text-sm font-secondary"
               >
                 {isGuest ? 'Sign In' : 'Sign Out'}
               </Button>
@@ -298,7 +342,7 @@ export function Home() {
                 placeholder="Search items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10"
+                className="pl-10 h-10 font-secondary"
               />
             </div>
             <Button
@@ -312,7 +356,7 @@ export function Home() {
 
           {/* Category Filter */}
           <div className="flex space-x-2 overflow-x-auto pb-2">
-            {CATEGORIES.map((category) => (
+            {allCategories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
@@ -323,8 +367,12 @@ export function Home() {
                 {category}
               </Button>
             ))}
+            <AddCategory setCategoriesChangeTracker={setCategoriesChangeTracker} categoriesChangeTracker={categoriesChangeTracker}/>
+            <DeleteCategory setCategoriesChangeTracker={setCategoriesChangeTracker} categoriesChangeTracker={categoriesChangeTracker}/>
+
           </div>
         </div>
+        
       </div>
 
       {/* Main Content */}
@@ -389,11 +437,11 @@ export function Home() {
                             {editingExpiration === item.id ? (
                               <div className="flex items-center space-x-2">
                                 <span>Expires:</span>
-                                <Input
-                                  type="date"
-                                  value={newExpirationDate ? format(new Date(newExpirationDate), 'yyyy-MM-dd') : ''}
-                                  onChange={(e) => setNewExpirationDate(e.target.value)}
-                                  className="w-32 h-8 text-xs"
+                                <DatePicker
+                                  date={newExpirationDate ? new Date(newExpirationDate) : undefined}
+                                  onDateChange={setNewExpirationDate}
+                                  placeholder="Select date"
+                                  className="w-32 h-8"
                                 />
                                 <Button
                                   size="sm"
@@ -411,20 +459,31 @@ export function Home() {
                                 >
                                   <X className="h-3 w-3" />
                                 </Button>
+                              
                               </div>
+                              
                             ) : (
                               <div className="flex items-center space-x-2">
                                 {item.estimated_expiration_at && (
-                                  <span>Expires: {format(new Date(item.estimated_expiration_at), 'MMM d')}</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleStartEditExpiration(item)}
+                                    className="h-auto p-0 text-sm text-muted-foreground hover:text-accent transition-colors"
+                                  >
+                                    Expires: {format(new Date(item.estimated_expiration_at), 'MMM d')}
+                                  </Button>
                                 )}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleStartEditExpiration(item)}
-                                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Edit2 className="h-3 w-3" />
-                                </Button>
+                                {!item.estimated_expiration_at && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleStartEditExpiration(item)}
+                                    className="h-auto p-0 text-sm text-muted-foreground hover:text-accent transition-colors"
+                                  >
+                                    Set expiration
+                                  </Button>
+                                )}
                                 <Select
                                   value={item.category}
                                   onValueChange={(value) => handleUpdateCategory(item.id, value)}
@@ -433,7 +492,7 @@ export function Home() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {CATEGORIES.filter(cat => cat !== 'All').map((category) => (
+                                    {allCategories.filter(cat => cat !== 'All').map((category) => (
                                       <SelectItem key={category} value={category} className="text-xs">
                                         {category}
                                       </SelectItem>
@@ -450,7 +509,17 @@ export function Home() {
                               
                             </p>
                           )}
+                          <div className="mt-1">
+                            <QuantityDisplay
+                              itemId={item.id}
+                              quantity={item.quantity}
+                              unit={item.unit}
+                              isGuest={isGuest}
+                              onUpdate={handleUpdateQuantity}
+                            />
+                          </div>
                         </div>
+                        
                         <div className="flex items-center space-x-2">
                           {item.estimated_expiration_at &&
                            new Date(item.estimated_expiration_at) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && (

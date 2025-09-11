@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { useGuestStore } from '@/stores/guestStore';
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const { setIsGuest } = useGuestStore();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -32,6 +34,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
+
+        // Clear guest mode when user becomes authenticated
+        if (session?.user) {
+          setIsGuest(false);
+        }
+
         setLoading(false);
       }
     );
@@ -40,11 +48,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+
+      // Clear guest mode if there's an existing authenticated session
+      if (session?.user) {
+        setIsGuest(false);
+      }
+
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [setIsGuest]);
 
   const signUp = async (email: string, password: string, userData: any) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -66,7 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password
     });
-    
+
+    // Clear guest mode on successful sign in (auth state change will handle the actual clearing)
+    if (!error) {
+      setIsGuest(false);
+    }
+
     return { error };
   };
 

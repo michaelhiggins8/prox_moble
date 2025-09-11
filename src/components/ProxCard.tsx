@@ -34,7 +34,7 @@ export function ProxCardTitle({ children, className, ...props }: ProxCardProps) 
   return (
     <h3
       className={cn(
-        "text-xl font-semibold leading-none tracking-tight text-foreground",
+        "text-xl font-semibold leading-none tracking-tight text-black font-primary",
         className
       )}
       {...props}

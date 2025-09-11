@@ -124,8 +124,8 @@ export function AddItem() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Add Items</h1>
-              <p className="text-sm text-muted-foreground">Choose how to add your groceries</p>
+              <h1 className="text-xl font-semibold text-foreground font-primary">Add Items</h1>
+              <p className="text-sm text-muted-foreground font-secondary">Choose how to add your groceries</p>
             </div>
           </div>
         </div>
@@ -140,8 +140,8 @@ export function AddItem() {
               <Edit3 className="h-6 w-6 text-accent" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-1">Manual Entry</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-lg font-semibold text-foreground font-primary mb-1">Manual Entry</h3>
+              <p className="text-sm text-muted-foreground font-secondary">
                 Enter item details by hand - quick and precise
               </p>
             </div>
@@ -155,8 +155,8 @@ export function AddItem() {
               <Camera className="h-6 w-6 text-highlight" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-1">Upload Photo</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-lg font-semibold text-foreground font-primary mb-1">Upload Photo</h3>
+              <p className="text-sm text-muted-foreground font-secondary">
                 Take a photo of your groceries to add multiple items
               </p>
             </div>
@@ -171,10 +171,10 @@ export function AddItem() {
               <Receipt className="h-6 w-6 text-highlight" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-1">
+              <h3 className="text-lg font-semibold text-foreground font-primary mb-1">
                 Scan Receipt
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground font-secondary">
                 Scan your grocery receipt to automatically add items
               </p>
             </div>
@@ -187,8 +187,8 @@ export function AddItem() {
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-accent rounded-full mt-2"></div>
               <div>
-                <p className="text-sm font-medium text-accent mb-1">Pro Tips</p>
-                <ul className="text-xs text-muted-foreground space-y-1">
+                <p className="text-sm font-medium text-accent font-primary mb-1">Pro Tips</p>
+                <ul className="text-xs text-muted-foreground font-secondary space-y-1">
                   <li>• Manual entry is fastest for single items</li>
                   <li>• Photo upload works great for multiple items</li>
                   <li>• Expiration dates are estimated automatically</li>

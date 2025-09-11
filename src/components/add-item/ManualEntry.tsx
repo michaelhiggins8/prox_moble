@@ -13,19 +13,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ProxCard, ProxCardHeader, ProxCardTitle, ProxCardContent } from '@/components/ProxCard';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { useUi } from '@/contexts/UiContext';
 
-const CATEGORIES = [
-  'Produce', 
-  'Dairy', 
-  'Meat', 
-  'Pantry', 
-  'Frozen', 
-  'Beverages', 
-  'Household', 
-  'Personal Care', 
-  'Baby', 
-  'Pet'
-];
+
 
 const manualEntrySchema = z.object({
   name: z.string().min(1, 'Item name is required'),
@@ -44,6 +34,7 @@ interface ManualEntryProps {
 
 export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
   const { toast } = useToast();
+  const { allCategories } = useUi();
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -118,8 +109,8 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Add Item Manually</h1>
-              <p className="text-sm text-muted-foreground">Enter item details</p>
+              <h1 className="text-xl font-semibold text-foreground font-primary">Add Item Manually</h1>
+              <p className="text-sm text-muted-foreground font-secondary">Enter item details</p>
             </div>
           </div>
         </div>
@@ -129,12 +120,12 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
       <div className="max-w-2xl mx-auto px-4 py-6">
         <ProxCard>
           <ProxCardHeader>
-            <ProxCardTitle>Item Details</ProxCardTitle>
+            <ProxCardTitle className="font-primary">Item Details</ProxCardTitle>
           </ProxCardHeader>
           <ProxCardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Item Name *</Label>
+                <Label htmlFor="name" className="font-secondary">Item Name *</Label>
                 <Input
                   id="name"
                   {...register('name')}
@@ -147,13 +138,13 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Category *</Label>
+                <Label htmlFor="category" className="font-secondary">Category *</Label>
                 <Select onValueChange={(value) => setValue('category', value)} value={selectedCategory}>
                   <SelectTrigger className="h-12">
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((category) => (
+                    {allCategories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
                       </SelectItem>
@@ -166,7 +157,7 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
               </div>
 
               <div className="space-y-2">
-                <Label>Purchase Date *</Label>
+                <Label className="font-secondary">Purchase Date *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -209,7 +200,7 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground"
+                  className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-secondary"
                   disabled={isLoading}
                 >
                   {isLoading ? "Adding Item..." : "Add Item"}
@@ -225,8 +216,8 @@ export function ManualEntry({ onBack, onSuccess }: ManualEntryProps) {
             <div className="flex items-start space-x-3">
               <div className="w-2 h-2 bg-accent rounded-full mt-2"></div>
               <div>
-                <p className="text-sm font-medium text-accent mb-1">Smart Estimation</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-medium text-accent font-primary mb-1">Smart Estimation</p>
+                <p className="text-xs text-muted-foreground font-secondary">
                   Prox will automatically estimate expiration and restock dates based on the item type and category.
                 </p>
               </div>

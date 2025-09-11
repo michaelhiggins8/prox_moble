@@ -25,28 +25,32 @@ export function Welcome() {
     <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4">
       <ProxCard className="w-full max-w-md mx-auto text-center">
         <ProxCardHeader>
-          <div className="w-16 h-16 bg-gradient-primary rounded-prox mx-auto mb-4 flex items-center justify-center">
-            <span className="text-2xl font-bold text-white">P</span>
+          <div className="w-32 h-32 rounded-prox mx-auto mt-4 mb-2 overflow-hidden">
+            <img
+              src="/Icon-01.jpg"
+              alt="Prox Logo"
+              className="w-48 h-48 object-cover object-center transform translate-x-[-12.5%] translate-y-[-12.5%]"
+            />
           </div>
-          <ProxCardTitle className="text-3xl text-primary mb-2">
+          <ProxCardTitle className="text-3xl text-primary mb-1 font-primary">
             Welcome to Prox
           </ProxCardTitle>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground font-secondary text-sm">
             Track your groceries, reduce waste, and never run out of essentials.
           </p>
         </ProxCardHeader>
         <ProxCardContent className="space-y-4">
           <Button
             onClick={handleSignUp}
-            className="w-full h-12 bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="w-full h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-secondary"
           >
             Create Account
           </Button>
-          
+
           <Button
             onClick={handleSignIn}
             variant="outline"
-            className="w-full h-12"
+            className="w-full h-12 font-secondary"
           >
             Sign In
           </Button>
@@ -63,12 +67,12 @@ export function Welcome() {
           <Button
             onClick={handleContinueAsGuest}
             variant="secondary"
-            className="w-full h-12"
+            className="w-full h-12 font-secondary"
           >
             Continue as Guest
           </Button>
-          
-          <p className="text-xs text-muted-foreground">
+
+          <p className="text-xs text-muted-foreground font-secondary">
             Guest mode stores data locally only. Create an account to sync across devices and enable notifications.
           </p>
         </ProxCardContent>

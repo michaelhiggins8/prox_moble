@@ -43,7 +43,7 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
 
       // Call the correct Supabase function endpoint
       const response = await fetch(
-        import.meta.env.VITE_SUPABASE_PHOTO_UPLOAD_FUNCTION_URL,
+        import.meta.env.VITE_SUPABASE_URL + "/functions/v1/dynamic-handler",
         {
           method: 'POST',
           headers: {
@@ -185,8 +185,8 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Upload Photo</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl font-semibold text-foreground font-primary">Upload Photo</h1>
+              <p className="text-sm text-muted-foreground font-secondary">
                 {isConfirming ? 'Review detected items' : 'Take or upload a photo of your groceries'}
               </p>
             </div>
@@ -202,8 +202,8 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
               <div className="w-20 h-20 bg-accent/10 rounded-prox mx-auto mb-6 flex items-center justify-center">
                 <Camera className="h-10 w-10 text-accent" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Upload Grocery Photo</h3>
-              <p className="text-muted-foreground mb-6">
+              <h3 className="text-lg font-medium mb-2 font-primary">Upload Grocery Photo</h3>
+              <p className="text-muted-foreground mb-6 font-secondary">
                 Take a photo of your groceries or upload from your gallery
               </p>
               
@@ -222,7 +222,7 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
               <div className="space-y-3">
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-12 bg-accent hover:bg-accent/90"
+                  className="w-full h-12 bg-accent hover:bg-accent/90 font-secondary"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Take Photo
@@ -236,7 +236,7 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
                       fileInputRef.current.click();
                     }
                   }}
-                  className="w-full h-12"
+                  className="w-full h-12 font-secondary"
                 >
                   <Upload className="mr-2 h-5 w-5" />
                   Upload from Gallery
@@ -249,8 +249,8 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
           <ProxCard>
             <ProxCardContent className="text-center py-12">
               <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h3 className="text-lg font-medium mb-2">Processing Photo</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg font-medium mb-2 font-primary">Processing Photo</h3>
+              <p className="text-muted-foreground font-secondary">
                 Analyzing your image and detecting grocery items...
               </p>
             </ProxCardContent>
@@ -282,7 +282,7 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
             {/* Items List */}
             <ProxCard>
               <ProxCardHeader>
-                <ProxCardTitle>Detected Items ({parsedItems.filter(item => item.confirmed).length} selected)</ProxCardTitle>
+                <ProxCardTitle className="font-primary">Detected Items ({parsedItems.filter(item => item.confirmed).length} selected)</ProxCardTitle>
               </ProxCardHeader>
               <ProxCardContent className="space-y-3">
                 {parsedItems.map((item, index) => (
@@ -326,13 +326,13 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
               <Button
                 variant="outline"
                 onClick={resetUpload}
-                className="flex-1 h-12"
+                className="flex-1 h-12 font-secondary"
               >
                 Try Again
               </Button>
               <Button
                 onClick={handleConfirmItems}
-                className="flex-1 h-12 bg-accent hover:bg-accent/90"
+                className="flex-1 h-12 bg-accent hover:bg-accent/90 font-secondary"
                 disabled={parsedItems.filter(item => item.confirmed).length === 0}
               >
                 Add {parsedItems.filter(item => item.confirmed).length} Items

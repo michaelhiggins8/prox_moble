@@ -751,9 +751,9 @@ function getHeuristicEstimate(name: string, category: string): { shelf_life: num
 
 async function getLLMEstimate(input: EstimateDatesInput): Promise<{ shelf_life: number; restock: number } | null> {
   try {
-    const functionUrl = import.meta.env.VITE_SUPABASE_EXPIRATION_FUNCTION_URL;
+    const functionUrl = import.meta.env.VITE_SUPABASE_URL + "/functions/v1/estimate-dates";
     if (!functionUrl) {
-      throw new Error('VITE_SUPABASE_EXPIRATION_FUNCTION_URL environment variable not set');
+      throw new Error('VITE_SUPABASE_URL environment variable not set');
     }
 
     const response = await fetch(functionUrl, {

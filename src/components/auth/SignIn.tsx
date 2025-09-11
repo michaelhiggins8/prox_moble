@@ -70,12 +70,12 @@ export function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
   return (
     <ProxCard className="w-full max-w-md mx-auto">
       <ProxCardHeader>
-        <ProxCardTitle className="text-center text-2xl">Sign In</ProxCardTitle>
+        <ProxCardTitle className="text-center text-2xl font-primary font-semibold text-black">Sign In</ProxCardTitle>
       </ProxCardHeader>
       <ProxCardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="font-secondary text-black">Email</Label>
             <Input
               id="email"
               type="email"
@@ -88,7 +88,7 @@ export function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="font-secondary text-black">Password</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -115,7 +115,7 @@ export function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
 
           <Button
             type="submit"
-            className="w-full h-12 bg-accent hover:bg-accent/90 text-accent-foreground"
+            className="w-full h-12 bg-accent hover:bg-accent/90 text-white font-primary font-medium"
             disabled={isLoading}
           >
             {isLoading ? "Signing In..." : "Sign In"}
@@ -125,7 +125,7 @@ export function SignIn({ onSuccess, onSwitchToSignUp }: SignInProps) {
             <button
               type="button"
               onClick={onSwitchToSignUp}
-              className="text-sm text-accent hover:underline"
+              className="text-sm text-accent hover:underline font-secondary"
             >
               Don't have an account? Sign up
             </button>

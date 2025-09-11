@@ -44,7 +44,7 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
       console.log('Starting receipt scan process...');
 
       // Use the Supabase function endpoint from environment variable
-      const scanReceiptFunctionUrl = import.meta.env.VITE_SUPABASE_SCAN_RECEIPT_FUNCTION_URL;
+      const scanReceiptFunctionUrl = import.meta.env.VITE_SUPABASE_URL + "/functions/v1/super-service";
       if (!scanReceiptFunctionUrl) {
         throw new Error('Scan receipt function URL is not set in environment variables (VITE_SUPABASE_SCAN_RECEIPT_FUNCTION_URL)');
       }
@@ -193,8 +193,8 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-foreground">Scan Receipt</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl font-semibold text-foreground font-primary">Scan Receipt</h1>
+              <p className="text-sm text-muted-foreground font-secondary">
                 {isConfirming ? 'Review detected items' : 'Take or upload a photo of your receipt'}
               </p>
             </div>
@@ -210,8 +210,8 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
               <div className="w-20 h-20 bg-accent/10 rounded-prox mx-auto mb-6 flex items-center justify-center">
                 <Receipt className="h-10 w-10 text-accent" />
               </div>
-              <h3 className="text-lg font-medium mb-2">Scan Your Receipt</h3>
-              <p className="text-muted-foreground mb-6">
+              <h3 className="text-lg font-medium mb-2 font-primary">Scan Your Receipt</h3>
+              <p className="text-muted-foreground mb-6 font-secondary">
                 Take a photo of your grocery receipt to automatically extract items
               </p>
 
@@ -230,7 +230,7 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
               <div className="space-y-3">
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-12 bg-accent hover:bg-accent/90"
+                  className="w-full h-12 bg-accent hover:bg-accent/90 font-secondary"
                 >
                   <Camera className="mr-2 h-5 w-5" />
                   Take Photo
@@ -244,7 +244,7 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
                       fileInputRef.current.click();
                     }
                   }}
-                  className="w-full h-12"
+                  className="w-full h-12 font-secondary"
                 >
                   <Upload className="mr-2 h-5 w-5" />
                   Upload from Gallery
@@ -257,8 +257,8 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
           <ProxCard>
             <ProxCardContent className="text-center py-12">
               <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h3 className="text-lg font-medium mb-2">Scanning Receipt</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-lg font-medium mb-2 font-primary">Scanning Receipt</h3>
+              <p className="text-muted-foreground font-secondary">
                 Analyzing your receipt and extracting grocery items...
               </p>
             </ProxCardContent>
@@ -290,7 +290,7 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
             {/* Items List */}
             <ProxCard>
               <ProxCardHeader>
-                <ProxCardTitle>Extracted Items ({extractedItems.filter(item => item.confirmed).length} selected)</ProxCardTitle>
+                <ProxCardTitle className="font-primary">Extracted Items ({extractedItems.filter(item => item.confirmed).length} selected)</ProxCardTitle>
               </ProxCardHeader>
               <ProxCardContent className="space-y-3">
                 {extractedItems.length === 0 ? (
@@ -348,13 +348,13 @@ export function ScanReceipt({ onBack, onSuccess }: ScanReceiptProps) {
               <Button
                 variant="outline"
                 onClick={resetUpload}
-                className="flex-1 h-12"
+                className="flex-1 h-12 font-secondary"
               >
                 Try Again
               </Button>
               <Button
                 onClick={handleConfirmItems}
-                className="flex-1 h-12 bg-accent hover:bg-accent/90"
+                className="flex-1 h-12 bg-accent hover:bg-accent/90 font-secondary"
                 disabled={extractedItems.filter(item => item.confirmed).length === 0}
               >
                 Add {extractedItems.filter(item => item.confirmed).length} Items

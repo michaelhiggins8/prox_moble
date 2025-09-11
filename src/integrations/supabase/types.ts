@@ -49,7 +49,9 @@ export type Database = {
           id: string
           name: string
           purchased_at: string
+          quantity: number | null
           store_name: string | null
+          unit: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -63,7 +65,9 @@ export type Database = {
           id?: string
           name: string
           purchased_at: string
+          quantity?: number | null
           store_name?: string | null
+          unit?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -77,7 +81,33 @@ export type Database = {
           id?: string
           name?: string
           purchased_at?: string
+          quantity?: number | null
           store_name?: string | null
+          unit?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      other_categories: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
           updated_at?: string | null
           user_id?: string | null
         }
