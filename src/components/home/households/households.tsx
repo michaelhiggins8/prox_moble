@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 // Import subcomponents
-import { HouseholdOverview } from './household';
+import { HouseholdOverview } from './household/household';
 import { MembersManagement } from './members';
 
 type DashboardView = 'overview' | 'members' | 'settings';
