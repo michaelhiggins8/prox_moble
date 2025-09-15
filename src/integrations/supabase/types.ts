@@ -155,6 +155,41 @@ export type Database = {
         }
         Relationships: []
       }
+      households: {
+        Row: {
+          id: number
+          name: string
+          head_of: string
+          join_key: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          name: string
+          head_of: string
+          join_key?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          name?: string
+          head_of?: string
+          join_key?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "households_head_of_fkey"
+            columns: ["head_of"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

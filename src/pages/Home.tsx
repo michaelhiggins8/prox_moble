@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ProxCard, ProxCardHeader, ProxCardTitle, ProxCardContent } from '@/components/ProxCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUi } from '@/contexts/UiContext';
 import { useGuestStore } from '@/stores/guestStore';
@@ -27,6 +28,8 @@ interface Item {
   store_name?: string;
   quantity?: number;
   unit?: string;
+  owner_first_name?: string;
+  owner_last_name?: string;
 }
 
 
@@ -42,19 +45,30 @@ export function Home() {
   const { items: guestItems, isGuest } = useGuestStore();
   const { toast } = useToast();
   const [items, setItems] = useState<Item[]>([]);
+  const [householdItems, setHouseholdItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [loading, setLoading] = useState(false);
   const [editingExpiration, setEditingExpiration] = useState<string | null>(null);
   const [newExpirationDate, setNewExpirationDate] = useState('');
+  const [activeTab, setActiveTab] = useState<'my-items' | 'household-items'>('my-items');
+  const [householdMembers, setHouseholdMembers] = useState<{id: string, first_name: string, last_name: string}[]>([]);
+  const [householdLoading, setHouseholdLoading] = useState(false);
 
   useEffect(() => {
     if (isGuest) {
       setItems(guestItems);
     } else if (user) {
       fetchUserItems();
+      fetchHouseholdMembers();
     }
   }, [user, isGuest, guestItems]);
+
+  useEffect(() => {
+    if (householdMembers.length > 0) {
+      fetchHouseholdItems();
+    }
+  }, [householdMembers]);
 
   const fetchUserItems = async () => {
     if (!user) return;
@@ -77,6 +91,113 @@ export function Home() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchHouseholdMembers = async () => {
+    if (!user) return;
+
+    setHouseholdLoading(true);
+    try {
+      // Get user's household from raw_user_meta_data
+      const userHousehold = user.user_metadata?.household;
+      if (!userHousehold) {
+        setHouseholdMembers([]);
+        return;
+      }
+
+      // Use the database function to get household members
+      const householdId = typeof userHousehold === 'string' ? parseInt(userHousehold) : userHousehold;
+      
+      const { data: membersData, error: membersError } = await supabase
+        .rpc('get_household_members', { household_id_param: householdId });
+
+      if (membersError) {
+        console.error('Database function error:', membersError);
+        // If the function doesn't exist, try alternative approach
+        if (membersError.code === 'PGRST202') {
+          console.log('Database function not found, trying alternative approach');
+          await fetchHouseholdMembersAlternative(householdId);
+          return;
+        }
+        throw membersError;
+      }
+
+      const members = membersData?.map((member: any) => ({
+        id: member.id,
+        first_name: member.first_name || 'Unknown',
+        last_name: member.last_name || 'User'
+      })) || [];
+
+      setHouseholdMembers(members);
+    } catch (error) {
+      console.error('Error fetching household members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load household members",
+        variant: "destructive",
+      });
+    } finally {
+      setHouseholdLoading(false);
+    }
+  };
+
+  const fetchHouseholdMembersAlternative = async (householdId: number) => {
+    try {
+      // Alternative approach: Get all users from auth.users using a different method
+      // This is a fallback if the RPC function doesn't work
+      console.log('Using alternative method to fetch household members');
+      
+      // For now, just show the current user as a fallback
+      const currentUserMember = {
+        id: user?.id || '',
+        first_name: user?.user_metadata?.first_name || 'Unknown',
+        last_name: user?.user_metadata?.last_name || 'User'
+      };
+      
+      console.log('Fallback: showing current user only:', currentUserMember);
+      setHouseholdMembers([currentUserMember]);
+    } catch (error) {
+      console.error('Error in alternative household members fetch:', error);
+      setHouseholdMembers([]);
+    }
+  };
+
+  const fetchHouseholdItems = async () => {
+    if (householdMembers.length === 0) return;
+
+    setHouseholdLoading(true);
+    try {
+      const memberIds = householdMembers.map(member => member.id);
+      
+      const { data, error } = await supabase
+        .from('items')
+        .select('id, name, category, purchased_at, estimated_expiration_at, estimated_restock_at, store_name, quantity, unit, created_at, updated_at, user_id, guest_owner_id, estimate_source')
+        .in('user_id', memberIds)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Add owner information to each item
+      const itemsWithOwners = (data || []).map(item => {
+        const owner = householdMembers.find(member => member.id === item.user_id);
+        return {
+          ...item,
+          owner_first_name: owner?.first_name,
+          owner_last_name: owner?.last_name
+        };
+      });
+
+      setHouseholdItems(itemsWithOwners);
+    } catch (error) {
+      console.error('Error fetching household items:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load household items",
+        variant: "destructive",
+      });
+    } finally {
+      setHouseholdLoading(false);
     }
   };
 
@@ -249,7 +370,10 @@ export function Home() {
     );
   };
 
-  const filteredItems = items.filter(item => {
+  const currentItems = activeTab === 'my-items' ? items : householdItems;
+  const currentLoading = activeTab === 'my-items' ? loading : householdLoading;
+
+  const filteredItems = currentItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
@@ -371,6 +495,18 @@ export function Home() {
             <DeleteCategory setCategoriesChangeTracker={setCategoriesChangeTracker} categoriesChangeTracker={categoriesChangeTracker}/>
 
           </div>
+
+          {/* Items Tab */}
+          {!isGuest && (
+            <div className="mt-4">
+              <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'my-items' | 'household-items')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="my-items">My Items</TabsTrigger>
+                  <TabsTrigger value="household-items">Household Items</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
         </div>
         
       </div>
@@ -392,16 +528,36 @@ export function Home() {
                 Sign Up
               </Button>
             </ProxCardContent>
+            
           </ProxCard>
         )}
 
         {/* Items List */}
-        {loading ? (
+        {currentLoading ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground">Loading items...</p>
           </div>
+        ) : activeTab === 'household-items' && householdMembers.length === 0 ? (
+          <ProxCard className="text-center py-12">
+            <ProxCardContent>
+              <div className="w-16 h-16 bg-muted rounded-prox mx-auto mb-4 flex items-center justify-center">
+                <Building2 className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Not in a household</h3>
+              <p className="text-muted-foreground mb-4">
+                You need to join or create a household to view household items
+              </p>
+              <Button
+                onClick={() => navigate('/home/households')}
+                className="bg-accent hover:bg-accent/90"
+              >
+                Manage Household
+              </Button>
+            </ProxCardContent>
+          </ProxCard>
         ) : Object.keys(groupedItems).length === 0 ? (
           <ProxCard className="text-center py-12">
+            
             <ProxCardContent>
               <div className="w-16 h-16 bg-muted rounded-prox mx-auto mb-4 flex items-center justify-center">
                 <Plus className="h-8 w-8 text-muted-foreground" />
@@ -420,18 +576,28 @@ export function Home() {
           </ProxCard>
         ) : (
           <div className="space-y-6">
+          
             {Object.entries(groupedItems).map(([category, categoryItems]) => (
               <div key={category}>
+                
                 <h2 className="text-lg font-semibold text-foreground mb-3 sticky top-32 bg-gradient-background/95 backdrop-blur-sm py-2">
                   {category} ({categoryItems.length})
                 </h2>
                 <div className="grid gap-3">
                   {categoryItems.map((item) => (
                     <ProxCard key={item.id} className="hover:shadow-medium transition-all group">
+                      
                       <ProxCardContent className="flex items-center justify-between p-4">
                         
                         <div className="flex-1">
-                          <h3 className="font-medium text-foreground">{item.name}</h3>
+                          <div className="flex items-center space-x-2">
+                            <h3 className="font-medium text-foreground">{item.name}</h3>
+                            {activeTab === 'household-items' && item.owner_first_name && (
+                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                                {item.owner_first_name} {item.owner_last_name}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
                             <span>Purchased: {format(new Date(item.purchased_at), 'MMM d')}</span>
                             {editingExpiration === item.id ? (
@@ -525,14 +691,16 @@ export function Home() {
                            new Date(item.estimated_expiration_at) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && (
                             <div className="w-2 h-2 bg-destructive rounded-full"></div>
                           )}
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteItem(item.id)}
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {activeTab === 'my-items' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteItem(item.id)}
+                              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </ProxCardContent>
                     </ProxCard>

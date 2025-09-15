@@ -14,7 +14,7 @@ import {
 
 // Import subcomponents
 import { HouseholdOverview } from './household/household';
-import { MembersManagement } from './members';
+import { MembersManagement } from './Members/Members';
 
 type DashboardView = 'overview' | 'members' | 'settings';
 
