@@ -3,6 +3,7 @@ import { ProxCard, ProxCardHeader, ProxCardTitle, ProxCardContent } from '@/comp
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Users, User } from 'lucide-react';
 
 interface HouseholdMember {
@@ -18,6 +19,7 @@ interface HouseholdMember {
 export function MembersManagement() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [members, setMembers] = useState<HouseholdMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasHousehold, setHasHousehold] = useState<boolean | null>(null);
@@ -180,10 +182,10 @@ export function MembersManagement() {
     <div className="space-y-6">
       {/* Header */}
         <div>
-          <h2 className="text-2xl font-semibold text-foreground font-primary">
+          <h2 className={`font-semibold text-foreground font-primary ${isMobile ? 'text-xl' : 'text-2xl'}`}>
           Household Members
           </h2>
-          <p className="text-muted-foreground font-secondary mt-1">
+          <p className={`text-muted-foreground font-secondary mt-1 ${isMobile ? 'text-sm' : 'text-base'}`}>
           All members of your household
         </p>
       </div>
@@ -206,16 +208,16 @@ export function MembersManagement() {
           ) : (
             <div className="space-y-3">
               {members.map((member) => (
-                <div key={member.id} className="flex items-center p-4 bg-muted/30 rounded-prox">
-                  <div className="w-10 h-10 bg-accent/10 rounded-prox flex items-center justify-center mr-3">
-                    <User className="h-5 w-5 text-accent" />
+                <div key={member.id} className={`flex items-center bg-muted/30 rounded-prox ${isMobile ? 'p-3' : 'p-4'}`}>
+                  <div className={`bg-accent/10 rounded-prox flex items-center justify-center ${isMobile ? 'w-8 h-8 mr-2' : 'w-10 h-10 mr-3'}`}>
+                    <User className={`text-accent ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground font-secondary">
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-foreground font-secondary ${isMobile ? 'text-sm' : 'text-base'}`}>
                       {member.raw_user_meta_data?.first_name || 'Unknown'}
                       {member.raw_user_meta_data?.last_name && ` ${member.raw_user_meta_data.last_name}`}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className={`text-muted-foreground break-all ${isMobile ? 'text-xs' : 'text-sm'}`}>
                       {member.email}
                     </p>
                   </div>

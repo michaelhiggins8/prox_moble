@@ -12,6 +12,7 @@ import { useUi } from '@/contexts/UiContext';
 import { useGuestStore } from '@/stores/guestStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { format } from 'date-fns';
 import { AddCategory } from '@/components/home/AddCategory';
 import { DeleteCategory } from '@/components/home/DeleteCategory';
@@ -44,6 +45,7 @@ export function Home() {
   const { allCategories, categoriesChangeTracker, setCategoriesChangeTracker } = useUi();
   const { items: guestItems, isGuest } = useGuestStore();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [items, setItems] = useState<Item[]>([]);
   const [householdItems, setHouseholdItems] = useState<Item[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -109,7 +111,7 @@ export function Home() {
       // Use the database function to get household members
       const householdId = typeof userHousehold === 'string' ? parseInt(userHousehold) : userHousehold;
       
-      const { data: membersData, error: membersError } = await supabase
+      const { data: membersData, error: membersError } = await (supabase as any)
         .rpc('get_household_members', { household_id_param: householdId });
 
       if (membersError) {
@@ -123,7 +125,7 @@ export function Home() {
         throw membersError;
       }
 
-      const members = membersData?.map((member: any) => ({
+      const members = (membersData as any[])?.map((member: any) => ({
         id: member.id,
         first_name: member.first_name || 'Unknown',
         last_name: member.last_name || 'User'
@@ -392,22 +394,22 @@ export function Home() {
     <div className="min-h-screen bg-gradient-background">
       {/* Header */}
       <div className="bg-card/95 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className={`mx-auto px-4 py-4 ${isMobile ? 'px-3 py-3' : 'max-w-4xl'}`}>
           
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-prox overflow-hidden">
+              <div className={`rounded-prox overflow-hidden ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}>
                 <img
                   src="/Icon-01.jpg"
                   alt="Prox Logo"
-                  className="w-20 h-20 object-cover object-center transform translate-x-[5%] translate-y-[-25%]"
+                  className={`object-cover object-center transform translate-x-[5%] translate-y-[-25%] ${isMobile ? 'w-16 h-16' : 'w-20 h-20'}`}
                 />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground font-primary">
+                <h1 className={`font-semibold text-foreground font-primary ${isMobile ? 'text-lg' : 'text-xl'}`}>
                   {isGuest ? 'Guest Mode' : `Hello, ${user?.user_metadata?.first_name || 'there'}!`}
                 </h1>
-                <p className="text-sm text-muted-foreground font-secondary">
+                <p className={`text-muted-foreground font-secondary ${isMobile ? 'text-xs' : 'text-sm'}`}>
                   {items.length} items in your pantry
                 </p>
               </div>
@@ -417,18 +419,18 @@ export function Home() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/expiring-soon')}
-                className="relative"
+                className={`relative ${isMobile ? 'h-8 w-8' : 'h-10 w-10'}`}
               >
-                <Bell className="h-5 w-5" />
+                <Bell className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="relative"
+                    className={`relative ${isMobile ? 'h-8 w-8' : 'h-10 w-10'}`}
                   >
-                    <Settings className="h-5 w-5" />
+                    <Settings className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -451,7 +453,7 @@ export function Home() {
               <Button
                 variant="ghost"
                 onClick={handleSignOut}
-                className="text-sm font-secondary"
+                className={`font-secondary ${isMobile ? 'text-xs px-2' : 'text-sm'}`}
               >
                 {isGuest ? 'Sign In' : 'Sign Out'}
               </Button>
@@ -459,34 +461,34 @@ export function Home() {
           </div>
 
           {/* Search and Filter */}
-          <div className="flex items-center space-x-2 mb-4">
+          <div className={`flex items-center space-x-2 mb-4 ${isMobile ? 'space-x-1' : ''}`}>
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
               <Input
                 placeholder="Search items..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 font-secondary"
+                className={`pl-10 font-secondary ${isMobile ? 'h-8 text-sm' : 'h-10'}`}
               />
             </div>
             <Button
               variant="outline"
               size="icon"
-              className="h-10 w-10"
+              className={`${isMobile ? 'h-8 w-8' : 'h-10 w-10'}`}
             >
-              <Filter className="h-4 w-4" />
+              <Filter className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
             </Button>
           </div>
 
           {/* Category Filter */}
-          <div className="flex space-x-2 overflow-x-auto pb-2">
+          <div className={`flex overflow-x-auto pb-2 ${isMobile ? 'space-x-1' : 'space-x-2'}`}>
             {allCategories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
-                className="whitespace-nowrap"
+                className={`whitespace-nowrap ${isMobile ? 'text-xs px-2 py-1' : ''}`}
               >
                 {category}
               </Button>
@@ -512,18 +514,18 @@ export function Home() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className={`mx-auto px-4 py-6 ${isMobile ? 'px-3 py-4' : 'max-w-4xl'}`}>
         {isGuest && (
-          <ProxCard className="mb-6 bg-gradient-to-r from-accent/10 to-highlight/10 border-accent/20">
-            <ProxCardContent className="flex items-center justify-between p-4">
-              <div>
-                <p className="font-medium text-accent">You're in guest mode</p>
-                <p className="text-sm text-muted-foreground">Create an account to sync across devices</p>
+          <ProxCard className={`mb-6 bg-gradient-to-r from-accent/10 to-highlight/10 border-accent/20 ${isMobile ? 'mb-4' : ''}`}>
+            <ProxCardContent className={`flex items-center justify-between ${isMobile ? 'p-3 flex-col space-y-3' : 'p-4'}`}>
+              <div className={`${isMobile ? 'text-center' : ''}`}>
+                <p className={`font-medium text-accent ${isMobile ? 'text-sm' : ''}`}>You're in guest mode</p>
+                <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Create an account to sync across devices</p>
               </div>
               <Button
                 onClick={() => navigate('/auth?mode=signup')}
                 size="sm"
-                className="bg-accent hover:bg-accent/90"
+                className={`bg-accent hover:bg-accent/90 ${isMobile ? 'w-full' : ''}`}
               >
                 Sign Up
               </Button>
@@ -580,25 +582,25 @@ export function Home() {
             {Object.entries(groupedItems).map(([category, categoryItems]) => (
               <div key={category}>
                 
-                <h2 className="text-lg font-semibold text-foreground mb-3 sticky top-32 bg-gradient-background/95 backdrop-blur-sm py-2">
+                <h2 className={`font-semibold text-foreground mb-3 sticky top-32 bg-gradient-background/95 backdrop-blur-sm py-2 ${isMobile ? 'text-base' : 'text-lg'}`}>
                   {category} ({categoryItems.length})
                 </h2>
-                <div className="grid gap-3">
+                <div className={`grid gap-3 ${isMobile ? 'gap-2' : ''}`}>
                   {categoryItems.map((item) => (
                     <ProxCard key={item.id} className="hover:shadow-medium transition-all group">
                       
-                      <ProxCardContent className="flex items-center justify-between p-4">
+                      <ProxCardContent className={`flex items-center justify-between ${isMobile ? 'p-3' : 'p-4'}`}>
                         
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-medium text-foreground">{item.name}</h3>
+                        <div className="flex-1 min-w-0">
+                          <div className={`flex items-center space-x-2 ${isMobile ? 'flex-wrap' : ''}`}>
+                            <h3 className={`font-medium text-foreground ${isMobile ? 'text-sm' : ''}`}>{item.name}</h3>
                             {activeTab === 'household-items' && item.owner_first_name && (
-                              <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                              <span className={`text-muted-foreground bg-muted px-2 py-1 rounded ${isMobile ? 'text-xs' : 'text-xs'}`}>
                                 {item.owner_first_name} {item.owner_last_name}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center space-x-4 mt-1 text-sm text-muted-foreground">
+                          <div className={`flex items-center mt-1 text-muted-foreground ${isMobile ? 'flex-wrap gap-2 text-xs' : 'space-x-4 text-sm'}`}>
                             <span>Purchased: {format(new Date(item.purchased_at), 'MMM d')}</span>
                             {editingExpiration === item.id ? (
                               <div className="flex items-center space-x-2">
@@ -714,10 +716,10 @@ export function Home() {
         {/* Floating Action Button */}
         <Button
           onClick={() => navigate('/add-item')}
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-accent hover:bg-accent/90 shadow-medium hover:shadow-glow transition-all"
+          className={`fixed rounded-full bg-accent hover:bg-accent/90 shadow-medium hover:shadow-glow transition-all ${isMobile ? 'bottom-4 right-4 w-12 h-12' : 'bottom-6 right-6 w-14 h-14'}`}
           size="icon"
         >
-          <Plus className="h-6 w-6" />
+          <Plus className={`${isMobile ? 'h-5 w-5' : 'h-6 w-6'}`} />
         </Button>
       </div>
     </div>

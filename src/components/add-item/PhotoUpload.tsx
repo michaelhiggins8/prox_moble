@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { ProxCard, ProxCardHeader, ProxCardTitle, ProxCardContent } from '@/components/ProxCard';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { selectImageWithCapacitor } from '@/utils/capacitorCamera';
 
 interface PhotoUploadProps {
   onBack: () => void;
@@ -34,6 +35,30 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
       processImage(imageData);
     };
     reader.readAsDataURL(file);
+  };
+
+  // Hybrid image selection - works on web and mobile
+  const selectImage = async () => {
+    try {
+      // Try Capacitor camera first
+      const imageData = await selectImageWithCapacitor();
+      
+      if (imageData) {
+        setImage(imageData);
+        processImage(imageData);
+        return;
+      }
+
+      // Fallback to web file input
+      fileInputRef.current?.click();
+    } catch (error) {
+      console.error('Error selecting image:', error);
+      toast({
+        title: "Error",
+        description: "Failed to select image. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const processImage = async (imageData: string) => {
@@ -220,14 +245,16 @@ export function PhotoUpload({ onBack, onSuccess }: PhotoUploadProps) {
               />
               
               <div className="space-y-3">
+                {/* Single unified button that works on all platforms */}
                 <Button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={selectImage}
                   className="w-full h-12 bg-accent hover:bg-accent/90 font-secondary"
                 >
                   <Camera className="mr-2 h-5 w-5" />
-                  Take Photo
+                  Take Photo or Select from Gallery
                 </Button>
                 
+                {/* Separate gallery button for web */}
                 <Button
                   variant="outline"
                   onClick={() => {

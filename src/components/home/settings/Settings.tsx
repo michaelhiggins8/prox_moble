@@ -21,24 +21,6 @@ export function Settings({ onBack }: SettingsProps) {
       title: 'Profile',
       icon: User,
       description: 'Manage your personal information'
-    },
-    {
-      id: 'notifications' as const,
-      title: 'Notifications',
-      icon: Bell,
-      description: 'Configure notification preferences'
-    },
-    {
-      id: 'privacy' as const,
-      title: 'Privacy & Security',
-      icon: Shield,
-      description: 'Manage your privacy settings'
-    },
-    {
-      id: 'help' as const,
-      title: 'Help & Support',
-      icon: HelpCircle,
-      description: 'Get help and contact support'
     }
   ];
 
